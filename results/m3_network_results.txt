@@ -1,3 +1,15 @@
-M3 (handcrafted features + graph-structural features: degree x3 + PageRank)
-AUC: 0.9737
-F1: 0.9589
+M3 v2 (handcrafted + graph features: degree x3 + PageRank, PageRank direction fixed, shared split)
+auc: 0.8466
+auprc: 0.5240
+fraud_f1: 0.3800
+fraud_precision: 0.6521
+fraud_recall: 0.2682
+weighted_f1: 0.8494
+
+DIAGNOSTIC - deg_rur ALONE (tests if this one feature explains most of the M1->M3 jump):
+auc: 0.7179
+auprc: 0.2390
+fraud_f1: 0.0000
+fraud_precision: 0.0000
+fraud_recall: 0.0000
+weighted_f1: 0.7878
