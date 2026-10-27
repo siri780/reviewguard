@@ -1,0 +1,3 @@
+M3 (handcrafted features + graph-structural features: degree x3 + PageRank)
+AUC: 0.9737
+F1: 0.9589
