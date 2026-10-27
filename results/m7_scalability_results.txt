@@ -1,0 +1,16 @@
+M7 Scalability Benchmark
+
+(A) Runtime vs data volume (local[*] cores):
+  fraction=0.2, rows=9191: 19.94s
+  fraction=0.4, rows=18382: 10.04s
+  fraction=0.6, rows=27572: 9.12s
+  fraction=0.8, rows=36763: 10.19s
+  fraction=1.0, rows=45954: 11.11s
+
+(B) Runtime vs available cores (full data):
+  cores=1: 12.96s
+  cores=2: 13.10s
+  cores=4: 12.76s
+
+Note: YelpChi caps at ~46K reviews; full 1M+ scale benchmarking
+deferred to the raw-text dataset pending author's reply.
