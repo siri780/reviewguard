@@ -1,0 +1,4 @@
+M1 Baseline (Logistic Regression, 32 handcrafted features)
+Dataset: YelpChi, 45954 reviews, fraud rate 0.1453
+AUC: 0.7717
+F1: 0.8207
