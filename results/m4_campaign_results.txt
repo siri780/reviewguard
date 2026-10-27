@@ -1,0 +1,12 @@
+M4 Campaign Detection v2 (connected components on R-U-R relation only)
+Note: combined R-U-R+R-S-R+R-T-R graph collapses into one giant component
+(45900/45954 nodes) because R-S-R/R-T-R are too dense; R-U-R alone isolates
+genuine repeat-reviewer clusters, a real campaign signal.
+
+Total reviewer clusters: 29431
+Single-review reviewers: 22123
+Multi-review clusters (size>=2): 7308
+Avg fraud rate within multi-review clusters: 0.0721
+Overall dataset fraud rate: 0.1453
+Flagged campaigns: 548
+Reviews covered by flagged campaigns: 1246
