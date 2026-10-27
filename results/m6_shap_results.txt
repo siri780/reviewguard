@@ -1,0 +1,17 @@
+M6 SHAP Explainability (LinearExplainer on sklearn LR, M3 feature set)
+sklearn LR test accuracy: 0.8887
+Fidelity (max abs error, SHAP sum vs model margin): 0.00000000
+
+Top 10 features by mean |SHAP value|:
+  f13: 3.3250
+  f14: 3.2091
+  deg_rur: 2.5948
+  pagerank: 0.8577
+  deg_rsr: 0.8041
+  deg_rtr: 0.5114
+  f5: 0.4913
+  f18: 0.3916
+  f0: 0.3460
+  f24: 0.2692
+
+Stability - avg top-5 feature overlap across 3 bootstrap resamples: 4.33 / 5
