@@ -1,9 +1,11 @@
-M1 Baseline v2 (Logistic Regression, 32 handcrafted features, SHARED split)
+M1 Baseline (Logistic Regression, 32 handcrafted features)
 Dataset: YelpChi, 45954 reviews, fraud rate 0.1453
-ROC-AUC: 0.7728
-AUPRC: 0.4027
-Fraud-class F1: 0.2254
-Fraud precision: 0.6500
-Fraud recall: 0.1363
-Weighted F1 (for reference only - inflated by majority class): 0.8237
-Confusion matrix: TP=182 FP=98 FN=1153 TN=7758
+Shared stratified split (row ids in results/_shared_split_row_ids.csv); M3 and the ablation script reuse this exact split.
+
+ROC-AUC: 0.7689
+AUPRC:   0.4072
+Fraud-class F1:        0.2322
+Fraud-class precision: 0.6620
+Fraud-class recall:    0.1408
+Weighted F1 (reference only): 0.8251
+Confusion matrix [[TN,FP],[FN,TP]]: [[7759, 96], [1147, 188]]

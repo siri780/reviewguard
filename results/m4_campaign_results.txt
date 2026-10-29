@@ -1,12 +1,22 @@
-M4 Campaign Detection v2 (connected components on R-U-R relation only)
+M4 Campaign Detection (connected components on R-U-R relation only)
 Note: combined R-U-R+R-S-R+R-T-R graph collapses into one giant component
 (45900/45954 nodes) because R-S-R/R-T-R are too dense; R-U-R alone isolates
-genuine repeat-reviewer clusters, a real campaign signal.
+genuine repeat-reviewer clusters.
+
+Retrospective, label-dependent diagnostic, not a detector: 'campaigns' are
+defined using the known fraud_rate per component, so there is no held-out
+evaluation here and no claim about unseen reviews.
 
 Total reviewer clusters: 29431
 Single-review reviewers: 22123
 Multi-review clusters (size>=2): 7308
-Avg fraud rate within multi-review clusters: 0.0721
 Overall dataset fraud rate: 0.1453
+Multi-review clusters - unweighted mean component fraud rate: 0.0721
+Multi-review clusters - review-weighted fraud rate: 0.0511
+15 largest clusters - review-weighted fraud rate: 0.0000
 Flagged campaigns: 548
 Reviews covered by flagged campaigns: 1246
+
+These four numbers (unweighted vs. review-weighted, all clusters vs. the 15
+largest) are what should be used to state whether large clusters skew genuine
+or fraudulent - not the unweighted multi-cluster average alone.

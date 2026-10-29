@@ -1,0 +1,61 @@
+M3b: deg_rur ablation (same shared split/test set for all five configs)
+======================================================================
+
+(a) M1 only (32 handcrafted)
+
+ROC-AUC: 0.7689
+AUPRC:   0.4072
+Fraud-class F1:        0.2322
+Fraud-class precision: 0.6620
+Fraud-class recall:    0.1408
+Weighted F1 (reference only): 0.8251
+Confusion matrix [[TN,FP],[FN,TP]]: [[7759, 96], [1147, 188]]
+----------------------------------------------------------------------
+
+(b) M1 + deg_rur only (33 features)
+
+ROC-AUC: 0.8515
+AUPRC:   0.5313
+Fraud-class F1:        0.3954
+Fraud-class precision: 0.6631
+Fraud-class recall:    0.2816
+Weighted F1 (reference only): 0.8525
+Confusion matrix [[TN,FP],[FN,TP]]: [[7664, 191], [959, 376]]
+----------------------------------------------------------------------
+
+(c) Full M3 (36 features)
+
+ROC-AUC: 0.8514
+AUPRC:   0.5312
+Fraud-class F1:        0.3954
+Fraud-class precision: 0.6673
+Fraud-class recall:    0.2809
+Weighted F1 (reference only): 0.8527
+Confusion matrix [[TN,FP],[FN,TP]]: [[7668, 187], [960, 375]]
+----------------------------------------------------------------------
+
+(d) M3 minus deg_rur (35 features)
+
+ROC-AUC: 0.7844
+AUPRC:   0.4273
+Fraud-class F1:        0.2657
+Fraud-class precision: 0.6070
+Fraud-class recall:    0.1700
+Weighted F1 (reference only): 0.8290
+Confusion matrix [[TN,FP],[FN,TP]]: [[7708, 147], [1108, 227]]
+----------------------------------------------------------------------
+
+(e) deg_rur alone (1 feature)
+
+ROC-AUC: 0.7218
+AUPRC:   0.2391
+Fraud-class F1:        0.0000
+Fraud-class precision: 0.0000
+Fraud-class recall:    0.0000
+Weighted F1 (reference only): 0.7878
+Confusion matrix [[TN,FP],[FN,TP]]: [[7855, 0], [1335, 0]]
+----------------------------------------------------------------------
+
+Derived: removing deg_rur from full M3 changes ROC-AUC by +0.0670 and fraud F1 by +0.1297.
+Derived: adding deg_rur alone to M1 changes ROC-AUC by +0.0826.
+These two numbers - not the standalone deg_rur diagnostic - are what should be used to state deg_rur's actual contribution within the model.

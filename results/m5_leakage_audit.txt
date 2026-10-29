@@ -1,7 +1,7 @@
 === ReviewGuard Leakage Audit ===
 
 Check 1 - Train/test row overlap: 0 overlapping rows (expect 0)
-  Train size: 36918, Test size: 9036, Total: 45954 (expect 45954)
+  Train size: 36764, Test size: 9190, Total: 45954 (expect 45954) -> PASS
 
 Check 2 - Feature-label correlations (top 5, flag if any > 0.95):
   f5: corr=-0.2350
@@ -9,24 +9,26 @@ Check 2 - Feature-label correlations (top 5, flag if any > 0.95):
   f15: corr=-0.1408
   f20: corr=0.1389
   f21: corr=0.1343
-  Suspicious (|corr|>0.95) features: none
+  Suspicious (|corr|>0.95) features: none -> PASS
 
-Check 3 - Graph feature construction (M3: degree x3, PageRank; M4: connected components):
-  Confirmed by code inspection: degree, PageRank, and component membership are
-  computed purely from edge structure (net_rur/net_rsr/net_rtr adjacency).
-  No review's label is read when computing another review's graph feature.
-  (M4's reported fraud_rate per component is a POST-HOC diagnostic only -
-   it is never fed back in as a model input feature.)
+Check 3 - Graph feature construction (code inspection, not re-verified at runtime):
+  degree, PageRank, and component membership are computed purely from edge
+  structure (net_rur/net_rsr/net_rtr adjacency). No review's label is read when
+  computing another review's graph feature. M4's fraud_rate-per-component is a
+  POST-HOC diagnostic only - never fed back in as a model input feature.
+  (This check is not included in the automated PASS/FAIL verdict below; it
+   reflects a manual review of the source, not a runtime assertion.)
 
-Check 4 - Transductive graph setting (explicit disclosure):
+Check 4 - Transductive graph setting (explicit disclosure, not a pass/fail test):
   Graph structure (edges, degree, PageRank, components) is computed on the FULL
   45,954-review graph before the train/test split is applied. This is standard
-  practice for graph-based fraud detection (transductive setting: the graph
-  topology is observable at train time, only TEST LABELS are held out) and
-  matches how the original YelpChi graph benchmarks are evaluated. It is NOT
+  practice for graph-based fraud detection (transductive setting: graph topology
+  is observable at train time, only TEST LABELS are held out). It is NOT
   equivalent to leaking test labels - no label is used in any graph feature -
-  but it is weaker than a fully inductive setup where test nodes' edges are
-  also hidden at train time. We disclose this explicitly rather than presenting
-  M3/M4 results as inductive-generalization numbers.
+  but it is weaker than a fully inductive setup where test nodes' edges are also
+  hidden at train time. Disclosed explicitly; M3/M4 results are not presented as
+  inductive-generalization numbers.
 
-=== Audit Result: PASS (no label leakage found; transductive design disclosed) ===
+Check 5 - M1/M3 share one split file (results/_shared_split_row_ids.csv) and cover the same 45954 row ids -> PASS
+
+=== Audit Result: PASS (checks 1, 2, 5 all passed; transductive design disclosed in Check 4) ===

@@ -1,0 +1,7 @@
+M4b Label-Free Campaign Flagging Rule
+Score = z(comp_size) + z(deg_rtr) + z(deg_rsr); no label used in scoring.
+
+ROC-AUC vs label: 0.4150
+AUPRC vs label: 0.1158 (base rate 0.1453)
+Precision@548:  0.0255 (14/548)
+Precision@1246: 0.0337 (42/1246)

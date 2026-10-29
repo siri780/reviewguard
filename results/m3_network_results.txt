@@ -1,15 +1,11 @@
-M3 v2 (handcrafted + graph features: degree x3 + PageRank, PageRank direction fixed, shared split)
-auc: 0.8466
-auprc: 0.5240
-fraud_f1: 0.3800
-fraud_precision: 0.6521
-fraud_recall: 0.2682
-weighted_f1: 0.8494
+M3 (handcrafted features + graph-structural features: degree x3 + PageRank)
+PageRank: bidirectional edges, scoped to R-U-R+R-T-R (R-S-R excluded).
+Same shared stratified split as M1 (src/common.py).
 
-DIAGNOSTIC - deg_rur ALONE (tests if this one feature explains most of the M1->M3 jump):
-auc: 0.7179
-auprc: 0.2390
-fraud_f1: 0.0000
-fraud_precision: 0.0000
-fraud_recall: 0.0000
-weighted_f1: 0.7878
+ROC-AUC: 0.8514
+AUPRC:   0.5312
+Fraud-class F1:        0.3954
+Fraud-class precision: 0.6673
+Fraud-class recall:    0.2809
+Weighted F1 (reference only): 0.8527
+Confusion matrix [[TN,FP],[FN,TP]]: [[7668, 187], [960, 375]]
