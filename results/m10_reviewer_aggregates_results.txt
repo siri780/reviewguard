@@ -1,0 +1,12 @@
+M10 Reviewer-aggregate (M2 proxy) features
+
+
+##### random shared split (train 36764, test 9190)
+M1 + deg_rur: AUC 0.8515  AUPRC 0.5313  fraud F1 0.3954  recall 0.2816
+M1 + deg_rur + reviewer-mean features (M2 proxy): AUC 0.8577  AUPRC 0.5384  fraud F1 0.4300  recall 0.3199
+M1 + reviewer-mean features (no deg_rur): AUC 0.7945  AUPRC 0.4934  fraud F1 0.3647  recall 0.2479
+
+##### reviewer-disjoint split (train 36763, test 9191)
+M1 + deg_rur: AUC 0.8519  AUPRC 0.5334  fraud F1 0.3879  recall 0.2734
+M1 + deg_rur + reviewer-mean features (M2 proxy): AUC 0.8628  AUPRC 0.5436  fraud F1 0.4110  recall 0.3018
+M1 + reviewer-mean features (no deg_rur): AUC 0.8026  AUPRC 0.4876  fraud F1 0.3515  recall 0.2408
