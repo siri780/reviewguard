@@ -1,0 +1,36 @@
+M9 Reviewer-disjoint split (whole R-U-R clusters held out)
+
+Train 36763 / Test 9191; test fraud rate 0.1532
+
+
+=== M1 (handcrafted) ===
+
+ROC-AUC: 0.7719
+AUPRC:   0.4052
+Fraud-class F1:        0.2274
+Fraud-class precision: 0.5819
+Fraud-class recall:    0.1413
+Weighted F1 (reference only): 0.8128
+Confusion matrix [[TN,FP],[FN,TP]]: [[7640, 143], [1209, 199]]
+
+
+=== M1 + deg_rur ===
+
+ROC-AUC: 0.8519
+AUPRC:   0.5334
+Fraud-class F1:        0.3879
+Fraud-class precision: 0.6672
+Fraud-class recall:    0.2734
+Weighted F1 (reference only): 0.8435
+Confusion matrix [[TN,FP],[FN,TP]]: [[7591, 192], [1023, 385]]
+
+
+=== M3 (full network) ===
+
+ROC-AUC: 0.8520
+AUPRC:   0.5338
+Fraud-class F1:        0.3885
+Fraud-class precision: 0.6707
+Fraud-class recall:    0.2734
+Weighted F1 (reference only): 0.8437
+Confusion matrix [[TN,FP],[FN,TP]]: [[7594, 189], [1023, 385]]
