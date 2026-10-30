@@ -1,0 +1,12 @@
+M12 Text-only baseline (Ott et al. corpus, TF-IDF uni+bigram LR, 5-fold CV, no tuning)
+
+fold 1: accuracy 0.8438  ROC-AUC 0.9152  F1 0.8512
+fold 2: accuracy 0.8719  ROC-AUC 0.9361  F1 0.8707
+fold 3: accuracy 0.8875  ROC-AUC 0.9566  F1 0.8868
+fold 4: accuracy 0.8688  ROC-AUC 0.9349  F1 0.8662
+fold 5: accuracy 0.8875  ROC-AUC 0.9416  F1 0.8861
+mean +/- sd: accuracy 0.8719 +/- 0.0180  ROC-AUC 0.9369 +/- 0.0149  F1 0.8722 +/- 0.0149
+positive polarity (out-of-fold): accuracy 0.8925  ROC-AUC 0.9519
+negative polarity (out-of-fold): accuracy 0.8512  ROC-AUC 0.9204
+top terms -> deceptive: chicago, warm the, chicago check, too a, hotel went, linnens, room immediately, scenery, the experince, experince, the convenient, the site
+top terms -> truthful:  much larger, prompt room, service friendly, striking, evening reception, friendly front, t valet, is dated, us got, door were, are from, amenities but
