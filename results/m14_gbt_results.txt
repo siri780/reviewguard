@@ -1,0 +1,5 @@
+M14 HistGradientBoosting on the shared split (no tuning, random_state=0)
+
+M1 (32 handcrafted): AUC 0.9445  AUPRC 0.8060  fraud F1 0.6781  precision 0.8481  recall 0.5648
+M1 + deg_rur: AUC 0.9602  AUPRC 0.8502  fraud F1 0.7463  precision 0.8587  recall 0.6599
+Full M3 (+4 graph): AUC 0.9636  AUPRC 0.8616  fraud F1 0.7560  precision 0.8781  recall 0.6637
