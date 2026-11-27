@@ -56,6 +56,7 @@ Weighted F1 (reference only): 0.7878
 Confusion matrix [[TN,FP],[FN,TP]]: [[7855, 0], [1335, 0]]
 ----------------------------------------------------------------------
 
-Derived: removing deg_rur from full M3 changes ROC-AUC by +0.0670 and fraud F1 by +0.1297.
-Derived: adding deg_rur alone to M1 changes ROC-AUC by +0.0826.
-These two numbers - not the standalone deg_rur diagnostic - are what should be used to state deg_rur's actual contribution within the model.
+Derived (change = after - before):
+Removing deg_rur from the full model lowers ROC-AUC from 0.8514 to 0.7844 (-0.0670) and lowers fraud-class F1 from 0.3954 to 0.2657 (-0.1297).
+Adding deg_rur alone to M1 raises ROC-AUC from 0.7689 to 0.8515 (+0.0826).
+These two comparisons, not the standalone deg_rur diagnostic (e), state deg_rur's contribution within the model.
