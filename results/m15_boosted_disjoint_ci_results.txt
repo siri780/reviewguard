@@ -1,0 +1,39 @@
+M15 Boosting and logistic regression on both splits, with reviewer-cluster bootstrap 95% intervals
+Bootstrap: 1000 replicates over whole R-U-R clusters of the test set, seed 0. Single model fit per cell.
+
+##### random shared split: train 36764 / test 9190; test fraud rate 0.1453
+-- boosting
+   M1          AUC 0.9451  AUPRC 0.8100
+   M1+deg_rur  AUC 0.9589  AUPRC 0.8542
+   M3          AUC 0.9609  AUPRC 0.8560
+   AUC gain M1 -> M1+deg_rur: +0.0138  95% CI [+0.0101, +0.0179]
+   AUC gain M1+deg_rur -> M3: +0.0020  95% CI [-0.0000, +0.0040]
+   AUC gain M1 -> M3: +0.0158  95% CI [+0.0115, +0.0200]
+-- logistic regression (scikit-learn)
+   M1          AUC 0.7690  AUPRC 0.4069
+   M1+deg_rur  AUC 0.8516  AUPRC 0.5312
+   M3          AUC 0.8514  AUPRC 0.5312
+   AUC gain M1 -> M1+deg_rur: +0.0825  95% CI [+0.0718, +0.0923]
+   AUC gain M1+deg_rur -> M3: -0.0001  95% CI [-0.0005, +0.0003]
+   AUC gain M1 -> M3: +0.0824  95% CI [+0.0717, +0.0921]
+
+##### reviewer-disjoint split: train 36763 / test 9191; test fraud rate 0.1532
+-- boosting
+   M1          AUC 0.9470  AUPRC 0.8169
+   M1+deg_rur  AUC 0.9567  AUPRC 0.8420
+   M3          AUC 0.9582  AUPRC 0.8473
+   AUC gain M1 -> M1+deg_rur: +0.0097  95% CI [+0.0017, +0.0162]
+   AUC gain M1+deg_rur -> M3: +0.0015  95% CI [-0.0007, +0.0039]
+   AUC gain M1 -> M3: +0.0112  95% CI [+0.0037, +0.0179]
+-- logistic regression (scikit-learn)
+   M1          AUC 0.7712  AUPRC 0.4038
+   M1+deg_rur  AUC 0.8514  AUPRC 0.5324
+   M3          AUC 0.8516  AUPRC 0.5328
+   AUC gain M1 -> M1+deg_rur: +0.0803  95% CI [+0.0652, +0.0960]
+   AUC gain M1+deg_rur -> M3: +0.0002  95% CI [-0.0001, +0.0004]
+   AUC gain M1 -> M3: +0.0804  95% CI [+0.0654, +0.0960]
+
+##### Boosting seed sensitivity (random_state 0-9; early stopping uses a random validation split)
+random shared split: AUC mean (sd) M1 0.9447 (0.0008), M1+deg_rur 0.9587 (0.0008), M3 0.9607 (0.0006); M1->M3 gain mean +0.0159, range [+0.0145, +0.0179]
+reviewer-disjoint split: AUC mean (sd) M1 0.9477 (0.0014), M1+deg_rur 0.9573 (0.0014), M3 0.9598 (0.0012); M1->M3 gain mean +0.0121, range [+0.0094, +0.0141]
+
