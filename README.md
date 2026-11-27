@@ -1,96 +1,135 @@
 # ReviewGuard
 
-Spark (MLlib + GraphFrames) study of whether reviewer-network features improve suspicious-review detection on YelpChi. Team 18, Big Data Systems and Algorithms, Stony Brook University. Final report: `ReviewGuard_Final_Report.pdf`.
+Group 18 · Big Data Systems and Algorithms · Stony Brook University
 
-## 1. Repository and frozen version
+We measured what reviewer-network features add to suspicious-review detection on YelpChi. On the shared test set, logistic regression scored 0.7689 ROC-AUC with 32 handcrafted features, 0.8515 with the reviewer count added, and 0.8514 with all four graph features. Adding the graph features to gradient boosting moved ROC-AUC from 0.9445 to 0.9636.
 
-- Repo: https://github.com/siri780/reviewguard (public)
-- Frozen version for grading: tag `final-v1`. Anything committed after this tag is not part of the submission.
-- Layout: `src/` scripts, `results/` recorded outputs, `docs/annotation_guideline.md`, `requirements.txt`, `ReviewGuard_Final_Report.pdf`, `README.md`.
-- All commands below are run **from the repository root** (the scripts read `data/...` and write `results/...` relative to the current directory).
+## Repository and frozen version
 
-## 2. Architecture and execution path
+[Public repository](https://github.com/siri780/reviewguard) · [Immutable source snapshot used for the report walkthrough](https://github.com/siri780/reviewguard/tree/ca04f3e1e6166572b6a79b6acb22305e96cf29f9) · [Final report](ReviewGuard_Final_Report.pdf)
 
-```
-data/YelpChi.mat -> common.py (load, edges, persisted split) -> m3 (GraphFrames features)
-   -> m1 / m3 / m3b (Spark LR) -> m9, m10, m14 (robustness)
-   -> m4, m4b, m5, m6 (campaigns, leakage, SHAP) -> m7, m11 (scale-up)
-Ott corpus (separate) -> m12, m12g (text baseline) -> m13 (annotation sheets)
-```
-
-There is one train/test split. `m1_baseline.py` creates it on first run and saves it to `results/_shared_split_row_ids.csv` (stratified 80/20, seed 42; 36,764 train / 9,190 test); every other script reloads that file through `common.SPLIT_PATH`. `m3_network_features.py` writes `results/_m3_features.csv`, which m3b, m4b, m5, m6, m10 and m14 reuse. So run m1 first, then m3. (`src/make_split.py` is an unused early script and is not part of the pipeline.)
-
-## 3. Environment and dependencies
-
-- Java 17 (required; Java 25 breaks Spark 3.5): `export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64`
-- Python 3.12, PySpark 3.5.3, GraphFrames JAR `io.graphframes:graphframes-spark3_2.12:0.12.3` (pulled by Spark at start-up), scikit-learn, pandas, numpy, scipy, shap, openpyxl
-- Hardware used: GitHub Codespaces, 2 cores (main runs), 4 cores / 16 GB (scale-up)
+The graded submission is the Git tag **`final-v1`**, which contains this README, the report PDF and the source. The immutable source reference is `ca04f3e1e6166572b6a79b6acb22305e96cf29f9`. The report PDF is distributed alongside this README. For the default Codespace path, open the repository on GitHub and create a Codespace. Run all commands from the checkout root. To inspect the frozen source separately, use a fresh clone:
 
 ```bash
-pip install -r requirements.txt
+git clone https://github.com/siri780/reviewguard.git
+cd reviewguard
+git switch --detach ca04f3e1e6166572b6a79b6acb22305e96cf29f9
 ```
 
-### Data preparation
+## Architecture and execution path
 
-The scripts do not download anything. They expect these files to exist before the first run:
+1. `src/common.py` reads the MATLAB matrices, assigns stable row IDs, and implements the shared split, Spark logistic regression, and positive-class metrics. M1 writes or reuses `results/_shared_split_row_ids.csv`.
+2. M3 converts sparse relations to edge lists and computes degrees and PageRank with GraphFrames. Its row-ID join writes `results/_m3_features.csv`. M3b reads the persisted features and compares five column subsets. M14 reads the same split for the three boosted models.
+3. M9 holds out complete same-reviewer components. M10 compares reviewer means on both splits. M4 summarizes label rates by component; M4b evaluates a label-free ranking. M5 audits integrity; M6 fits a separate scikit-learn linear model for SHAP.
+4. The scaling scripts time synthetic workloads. The Ott text scripts form a separate pipeline with their own folds and data. Neither uses the main test split for its primary analysis.
 
-1. **YelpChi:** place the YelpChi `.mat` file (45,954 reviews; keys `features`, `label`, `net_rur`, `net_rsr`, `net_rtr`, `homo`) at `data/YelpChi.mat`. `data/` is not tracked in git. One way to obtain the file is through DGL's `FraudYelpDataset`, which downloads it to a cache folder under `~/.dgl`; copy it from there:
-   ```bash
-   mkdir -p data && cp "$(find ~/.dgl -name YelpChi.mat | head -1)" data/YelpChi.mat
-   ```
-2. **Ott et al. corpus** (only for m12, m12g, m13): download `op_spam_v1.4` and unpack it so that `data/optspam/op_spam_v1.4/` exists.
+## Environment and installation
 
-## 4. Reproduction procedure
+Original main experiments used two cores. The original scale-up used four cores and 16 GB on one machine. The November 2026 verification completed all ten YelpChi scripts with Python 3.12.3, Java 17.0.21.1 and PySpark 3.5.3. The successful environment included setuptools 84.2.1, graphframes 0.6 (Python), scikit-learn 1.9.1, pandas 3.1.1, numpy 2.5.5, scipy 1.18.1 and shap 0.54.1. Spark fetches the GraphFrames JVM artifact `io.graphframes:graphframes-spark3_2.12:0.12.3` at startup. Maven access is required on the first run.
 
-From the repository root, in this order:
+In an Ubuntu-based Codespace terminal, from the checkout root:
 
 ```bash
+sudo apt-get update -qq && sudo apt-get install -y -qq openjdk-17-jdk-headless
 export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-python src/m1_baseline.py                 # also creates results/_shared_split_row_ids.csv
-python src/m3_network_features.py         # also creates results/_m3_features.csv
+export PATH="$JAVA_HOME/bin:$PATH"
+hash -r
+java -version
+
+python -m venv /tmp/reviewguard-tools
+/tmp/reviewguard-tools/bin/python -m pip install uv
+UV=/tmp/reviewguard-tools/bin/uv
+"$UV" venv --python 3.12.3 /tmp/reviewguard-py312
+source /tmp/reviewguard-py312/bin/activate
+"$UV" pip install --python "$VIRTUAL_ENV/bin/python" -r requirements.txt \
+  setuptools==84.2.1 graphframes==0.6 scikit-learn==1.9.1 pandas==3.1.1 \
+  numpy==2.5.5 scipy==1.18.1 shap==0.54.1
+export PYSPARK_PYTHON="$VIRTUAL_ENV/bin/python"
+export PYSPARK_DRIVER_PYTHON="$VIRTUAL_ENV/bin/python"
+python -c "import sys,pyspark; from distutils.version import LooseVersion; print(sys.version, pyspark.__version__)"
+```
+
+Use the same terminal for the remaining steps. If reopening a terminal, reactivate the environment and repeat the Java and PySpark exports. On the verification machine, the original Python 3.14.2 run failed during PySpark serialization. A clean Python 3.12 environment also needed setuptools for PySpark's distutils import.
+
+### Dataset used for the verified run
+
+The CARE-GNN archive worked after the direct DGL download and DGL import routes failed. Run from the ReviewGuard root:
+
+```bash
+mkdir -p data results
+DATA_TMP=$(mktemp -d)
+git clone --depth 1 https://github.com/YingtongDou/CARE-GNN.git "$DATA_TMP/CARE-GNN" &&
+unzip -o "$DATA_TMP/CARE-GNN/data/YelpChi.zip" -d "$DATA_TMP" &&
+cp "$DATA_TMP/YelpChi.mat" data/YelpChi.mat
+python -c "import scipy.io as s; m=s.loadmat('data/YelpChi.mat'); print(sorted(k for k in m if not k.startswith('__'))); print(m['features'].shape,m['label'].flatten().mean())"
+```
+
+Expected keys: `features, homo, label, net_rsr, net_rtr, net_rur`. Expected shape and positive fraction: `(45954, 32) 0.14529747138442792`.
+
+## Reproduction procedure
+
+Execute each command from the repository root in order. M1 establishes the main split. M3 writes the feature table consumed by later scripts.
+
+```bash
+python src/m1_baseline.py
+python src/m3_network_features.py
 python src/m3b_ablation.py
+python src/m14_gbt_check.py
 python src/m9_reviewer_disjoint_split.py
 python src/m10_reviewer_aggregates.py
-python src/m14_gbt_check.py
 python src/m4_campaign_detection.py
 python src/m4b_label_free_campaigns.py
 python src/m5_leakage_audit.py
 python src/m6_shap_explainability.py
-python src/m7_scalability.py
-python src/m11_scale_up.py                # use a 4-core machine; writes m11_scale_cores*.csv
-python src/m12_text_baseline.py           # needs data/optspam; writes results/m12_oof_predictions.csv
-python src/m12g_text_grouped.py           # needs data/optspam
-python src/m13_make_annotation_sheets.py  # needs m12 output; see known issues
 ```
 
-| Report item | Script | Output file |
+| Final-report evidence | Script and recorded output |
+|---|---|
+| Table 1, dimensions and prevalence | Dataset check above; M1; grouped text baseline for Ott |
+| Table 2, architecture | Source walkthrough in common.py and the M1/M3 scripts |
+| Tables 3 and 4, ablation and confusion counts | M1, M3, M3b; results/m3b_ablation_results.txt |
+| Table 5, robustness | M9, M14; results/m9_reviewer_disjoint_results.txt and results/m14_gbt_results.txt |
+| Reviewer means | M10; results/m10_reviewer_aggregates_results.txt |
+| Campaign, audit and explanation | M4, M4b, M5, M6; results/m4*, results/m5*, results/m6_shap_results.txt |
+| Table 6, timing | M11; results/m11_scale_cores4.csv; group trials by row count and average each stage before summing |
+| Text and annotation | M12g; results/m12g_text_baseline_results.txt; historical annotation records in results/annotation/ |
+
+```bash
+grep -H 'ROC-AUC' results/m1_baseline_results.txt results/m3_network_results.txt results/m3b_ablation_results.txt
+grep -A6 'Derived' results/m3b_ablation_results.txt
+cat results/m14_gbt_results.txt
+```
+
+Expected ablation ROC-AUCs in order: 0.7689, 0.8515, 0.8514, 0.7844, 0.7218. Removing reviewer degree lowers AUC by 0.0670 and fraud F1 by 0.1297. The recorded file at an earlier commit may retain the old sign wording; freshly generated output from the corrected script uses after minus before. Boosted AUCs: 0.9445, 0.9602, 0.9636.
+
+### Additional original experiments
+
+For the four-core synthetic workload, provision a four-core machine and run:
+
+```bash
+CORES=4 KS=1,2,5,11,22 TRIALS=2 python src/m11_scale_up.py
+```
+
+For the separate text study, unpack the Ott corpus so the polarity directories are under `data/optspam/op_spam_v1.4/`. Then run:
+
+```bash
+python src/m12_text_baseline.py
+python src/m12g_text_grouped.py
+```
+
+M12 creates out-of-fold predictions. M12g gives the grouped five-fold text metrics for the report. M13 uses M12 predictions to generate blank annotation sheets. To generate **new** sheets, run `python src/m13_make_annotation_sheets.py` in a separate checkout with the data and predictions present, preserving completed annotation files. The corrected generator keys text by polarity and filename. The historical human judgments apply to the original positive-only sheets.
+
+## Verification and ownership
+
+| Area | Owner | Modules |
 |---|---|---|
-| Table 3, Figure 2 (ablation) | m1, m3, m3b | `results/m1_*`, `results/m3_*`, `results/m3b_ablation_results.txt` |
-| Table 4 (robustness) | m9, m10, m14 | `results/m9_*`, `results/m10_*`, `results/m14_gbt_results.txt` |
-| Section 8.2 (campaigns, SHAP, leakage) | m4, m4b, m5, m6 | `results/m4*`, `results/m5*`, `results/m6*` |
-| Table 6, Figure 6 (scale-up) | m11 | `results/m11_scale_cores*.csv` |
-| Table 5 (text, annotation) | m12g, m13 | `results/m12g_*`, `results/annotation/` |
+| Data and baseline pipeline | Shirisha Gajendra | common, M1, M3 |
+| Graph analysis and robustness | Sai Varshith Sabbella | M3b, M4, M4b, M9, M10 |
+| Integrity checks and explanation | Dhanyashri Marianna | M5, M6, M14 |
+| Systems and scaling | Gaurang Acharekar | M7, M11 |
+| Text and human study | Vishnu Malladi | M12/M12g, M13 and annotation analysis |
 
-Timings and AUC values can differ slightly across machines and Spark runs.
+Dhanyashri Marianna independently completed the ten-script YelpChi run in Codespaces and verified all eight requested ROC-AUCs. The M5 automated checks passed; the transductive design remains a limitation. SHAP ranked f13, f14 and reviewer degree first through third, with a mean top-five overlap of 4.33/5. The scale, text and human-study measurements come from the original experiments and were outside this rerun.
 
-## 5. Verification and ownership
+The negative campaign finding, single-machine synthetic benchmark, positive-only annotation sample, separate text corpus, and incomplete proposal items are described in the report. AI tools assisted with scaffolding, debugging, analysis review and report drafting.
 
-Status of each result: **Re-runnable** = script and output both in the repo. **Recorded only** = output in the repo, generated in a session we cannot fully re-run.
-
-| Area | Contents | Owner | Status |
-|---|---|---|---|
-| A. Data and baseline | common.py, split, m1, m3 | Shirisha Gajendra | Re-runnable |
-| B. Graph analysis | m3b, m4, m4b, m9, m10 | Sai Varshith Sabbella | Re-runnable |
-| C. Checks and explanation | m5, m6, m14 | Dhanyashri Marianna | Re-runnable |
-| D. Scale and systems | m7, m11, environment | Gaurang Acharekar | Re-runnable |
-| E. Text and human study | m12g, m13, annotation analysis | Vishnu Malladi | Annotation results recorded (see known issue below); m13 fix not re-run |
-
-Claude (Anthropic) assisted with scaffolding, debugging, analysis review and report drafting; the team made the design decisions and is responsible for the results.
-
-## Known issues and unfinished work
-
-- The annotation sheets used in the study were built by an earlier version of `m13_make_annotation_sheets.py` that looked up review text by bare file name. Names repeat across the corpus's polarity folders, so every sheet row showed the positive-sentiment text. True labels were unaffected. The answer key was corrected (`results/annotation/answer_key_corrected.csv`) and the study is reported as positive-sentiment only. The script now looks up text by (polarity, file name); this fix has not been re-run, and re-running it would produce sheets that differ from the ones the annotators saw.
-- `m3b_ablation.py` and `m14_gbt_check.py` were edited after the recorded outputs in `results/` were produced (a sign-wording fix and a direct split load); the saved result files will be regenerated on the next run.
-- Not built from the proposal: Trust Score, tri-class labels, DistilBERT/XGBoost ensemble, MinHash/LSH, LIME, counterfactuals, LLM hard negatives, interactive demo, 10M-row benchmark.
-- Text, behavior and network signals were never combined on one dataset. The scale-up uses synthetic replicas of YelpChi on a single machine.
-- The command order above has been checked against the scripts' file paths but has not been executed end to end from a clean checkout.
