@@ -1,5 +1,11 @@
 """M13 - Build blind annotation sheets from the Ott et al. corpus: 100 reviews (25 per polarity x
-truth cell), shuffled; first 20 = pilot. Annotators see only an id and the text."""
+truth cell), shuffled; first 20 = pilot. Annotators see only an id and the text.
+
+Fix: review text is looked up by (polarity, file name). File names repeat across the
+positive_polarity and negative_polarity folders, so the old lookup by bare file name
+showed the same (positive) text for both. Note: the annotation study reported in the paper
+used sheets built with the old lookup (positive-sentiment text only); this version is for
+reproducibility and would show the correct text per row."""
 import glob, os
 import numpy as np
 import pandas as pd
@@ -8,12 +14,18 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.worksheet.datavalidation import DataValidation
 
 oof = pd.read_csv("results/m12_oof_predictions.csv")
-paths = {os.path.basename(p): p for p in glob.glob("data/optspam/op_spam_v1.4/*/*/*/*.txt")}
+paths = {
+    (p.split(os.sep)[-4].split("_")[0], os.path.basename(p)): p
+    for p in glob.glob("data/optspam/op_spam_v1.4/*/*/*/*.txt")
+}
 rng = np.random.RandomState(42)
 parts = [g.sample(25, random_state=rng) for _, g in oof.groupby(["polarity", "label"])]
 s = pd.concat(parts).sample(frac=1, random_state=rng).reset_index(drop=True)
 s["id"] = [f"R{i+1:03d}" for i in range(len(s))]
-s["text"] = [open(paths[f], encoding="utf-8", errors="ignore").read().strip() for f in s.file]
+s["text"] = [
+    open(paths[(str(pol).split("_")[0], f)], encoding="utf-8", errors="ignore").read().strip()
+    for pol, f in zip(s.polarity, s.file)
+]
 os.makedirs("results/annotation", exist_ok=True)
 s[["id", "file", "polarity", "hotel", "label", "prob", "prediction"]].rename(
     columns={"label": "truth_deceptive", "prob": "model_prob", "prediction": "model_pred"}
