@@ -1,40 +1,86 @@
 # ReviewGuard
 
-Measuring how much reviewer-network features add to a baseline for suspicious-review detection (Spark MLlib / GraphFrames). Big Data Systems and Algorithms (MS Data Science, Stony Brook), Team 18: Shirisha Gajendra, Vishnu Malladi, Dhanyashri Marianna, Gaurang Acharekar, Sai Varshith Sabbella.
+Spark (MLlib + GraphFrames) study of whether reviewer-network features improve suspicious-review detection on YelpChi. Team 18, Big Data Systems and Algorithms, Stony Brook University. Final report: `ReviewGuard_Final_Report.pdf`.
 
-## Data
-YelpChi (Rayana and Akoglu, KDD 2015): 45,954 reviews, 14.5% filtered as spam. We use the pre-extracted 32 handcrafted features and the three relation graphs (R-U-R, R-S-R, R-T-R) from the DGL FraudYelpDataset (`YelpChi.mat`, not committed; download into `data/`). The raw text version needs a request to the authors (pending), so text work uses the separate Ott et al. deceptive-opinion corpus.
+## 1. Repository and frozen version
 
-## Scripts (src/) and key results
-| Script | Purpose | Result |
+- Repo: https://github.com/siri780/reviewguard (public)
+- Frozen version for grading: tag `final-v1` (commit `<COMMIT-HASH>`). Anything committed after this tag is not part of the submission.
+- Layout: `src/` scripts, `results/` recorded outputs, `docs/annotation_guideline.md`, `README.md`.
+
+## 2. Architecture and execution path
+
+```
+YelpChi.mat -> common.py (load, edges, persisted split) -> m3 (GraphFrames features)
+   -> m1 / m3 / m3b (Spark LR) -> m9, m10, m14 (robustness)
+   -> m4, m4b, m5, m6 (campaigns, leakage, SHAP) -> m7, m11 (scale-up)
+Ott corpus (separate) -> m12, m12g (text baseline) -> m13 (annotation sheets)
+```
+
+Every script reads `results/_shared_split_row_ids.csv` (stratified 80/20, seed 42; 36,764 train / 9,190 test) and writes its output to `results/`. `m3_network_features.py` writes `results/_m3_features.csv`, which m4b, m5 and m6 reuse, so run m3 first.
+
+## 3. Environment and dependencies
+
+- Java 17 (required; Java 25 breaks Spark 3.5): `export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64`
+- Python 3.12, PySpark 3.5.3, GraphFrames JAR `io.graphframes:graphframes-spark3_2.12:0.12.3` (pulled by Spark at start-up), scikit-learn, pandas, numpy, scipy, shap
+- Hardware used: GitHub Codespaces, 2 cores (main runs), 4 cores / 16 GB (scale-up)
+
+```bash
+pip install --break-system-packages pyspark==3.5.3 graphframes scikit-learn pandas numpy scipy shap dgl
+```
+
+Data: YelpChi is downloaded through DGL `FraudYelpDataset` (see `src/common.py`). The Ott et al. corpus (op_spam_v1.4) must be downloaded separately into `data/optspam/` and is not stored in the repo.
+
+## 4. Reproduction procedure
+
+Run from the repo root, in this order:
+
+```bash
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+cd src
+python make_split.py
+python m1_baseline.py
+python m3_network_features.py
+python m3b_ablation.py
+python m9_reviewer_disjoint_split.py
+python m10_reviewer_aggregates.py
+python m14_gbt_check.py
+python m4_campaign_detection.py
+python m4b_label_free_campaigns.py
+python m5_leakage_audit.py
+python m6_shap_explainability.py
+python m7_scalability.py
+python m11_scale_up.py          # use a 4-core machine; writes m11_scale_cores*.csv
+python m12g_text_grouped.py     # needs data/optspam
+python m13_make_annotation_sheets.py   # see known issue below
+```
+
+| Report item | Script | Output file |
 |---|---|---|
-| m1_baseline.py | Logistic regression on 32 features, shared split | AUC 0.7689, AUPRC 0.4072, fraud F1 0.2322 |
-| m3_network_features.py | + degree (3 relations) + PageRank | AUC 0.8514, AUPRC 0.5312, fraud F1 0.3954 |
-| m3b_ablation.py | Five-way ablation | M1 + deg_rur (0.8515) matches full M3 |
-| m4_campaign_detection.py | Same-reviewer clusters (descriptive) | Largest 15 clusters contain no fraud |
-| m4b_label_free_campaigns.py | Label-free cluster/burst rule | AUC 0.415 (fails) |
-| m5_leakage_audit.py | Scoped integrity checks | Row-id separation, coverage, correlation checks pass |
-| m6_shap_explainability.py | SHAP on a separately fitted scikit-learn model | deg_rur is the only graph feature in the top 10 |
-| m7_scalability.py, m11_scale_up.py | Runtime; synthetic scale-up to 1.01M rows | About 11 s on 4 cores; connected components scale poorly with cores |
-| m9_reviewer_disjoint_split.py | Whole reviewer clusters held out | M1 0.7719; M1 + deg_rur 0.8519; full M3 0.8520 |
-| m10_reviewer_aggregates.py | Reviewer-mean features (behavior proxy) | Small further gain (AUC 0.8577 random, 0.8628 disjoint) |
-| m12_text_baseline.py, m12g_text_grouped.py | TF-IDF text baseline on Ott corpus; grouped-fold rerun | AUC 0.937; 4 duplicate groups, none crossing folds |
-| m13_make_annotation_sheets.py | Blind annotation sheets (has a known file-name lookup bug, see below) | |
-| m14_gbt_check.py | Gradient-boosted check of the network gain | M1 0.9445; + deg_rur 0.9602; full M3 0.9636 |
+| Table 2, Figure 2 (ablation) | m1, m3, m3b | results/m1_*, m3_*, m3b_ablation_results.txt |
+| Table 3 (robustness) | m9, m10, m14 | results/m9_*, m10_*, m14_gbt_results.txt |
+| Section 8.2 (campaigns, SHAP, leakage) | m4, m4b, m5, m6 | results/m4*, m5*, m6* |
+| Table 4, Figure 3 (scale-up) | m11 | results/m11_scale_cores*.csv |
+| Table 5 (text, annotation) | m12g, m13 | results/m12g_*, results/annotation/ |
 
-## Findings
-1. With logistic regression, graph features raise AUC 0.769 to 0.851; most of the gain is one feature, deg_rur (reviewer activity). With a stronger gradient-boosted baseline the gain shrinks to about +0.019 AUC, so the size of the gain depends on the baseline.
-2. The gain holds under a reviewer-disjoint split.
-3. Fraud-labeled reviews concentrate in small, low-activity accounts. The same-reviewer cluster rule fails, which speaks to single-account behavior only, not coordination across accounts.
-4. An early AUC of 0.97 was too high; two implementation problems (different splits, PageRank on the wrong graph) were fixed, and the earlier number should not be cited.
+Timings and AUC values can differ slightly across machines and Spark runs.
 
-## Human annotation (D6)
-Completed on 95 unique positive-sentiment reviews from the Ott corpus (YelpChi has no text). Protocol: `docs/annotation_guideline.md`. Results: `results/annotation/`. Three-label kappa 0.586; annotators about 77-78% accurate on the reviews they judged, text model 87.4% on the same reviews. Known issue: `m13_make_annotation_sheets.py` looked up review text by bare file name, so every row showed the positive-sentiment version; the corrected key (`results/annotation/answer_key_corrected.csv`) rescored the model on the text actually shown. The answer key was added after annotation finished.
+## 5. Verification and ownership
 
-## Status and open items
-- Raw YelpChi review text (requested from the authors) would let text, behavior and network signals be combined on one dataset; today they are on different datasets.
-- The scale-up is synthetic and single-machine; the gradient-boosted check is a single untuned run.
-- Rewritten core scripts from a teammate review are untested and are kept off `main`.
+Status of each result: **Re-runnable** = script and output both in the repo. **Recorded only** = output in the repo, generated in a session we cannot fully re-run.
 
-## Setup
-Java 17, Python 3.12, PySpark 3.5.3, GraphFrames 0.12.3 (pulled by Spark at runtime). Put `YelpChi.mat` in `data/` and run the scripts in src/ in the order listed above.
+| Area | Contents | Owner | Status |
+|---|---|---|---|
+| A. Data and baseline | common.py, split, m1, m3 | Shirisha Gajendra | Re-runnable |
+| B. Graph analysis | m3b, m4, m4b, m9, m10 | Sai Varshith Sabbella | Re-runnable |
+| C. Checks and explanation | m5, m6, m14 | Dhanyashri Marianna | Re-runnable |
+| D. Scale and systems | m7, m11, environment | Gaurang Acharekar | Re-runnable |
+| E. Text and human study | m12g, m13, annotation analysis | Vishnu Malladi | Annotation sheet builder has a known bug (below); results recorded |
+
+Each owner re-ran their scripts and compared against `results/` before the tag. Claude (Anthropic) assisted with scaffolding, debugging, analysis review and report drafting; the team made the design decisions and is responsible for the results.
+
+## Known issues and unfinished work
+
+- `m13_make_annotation_sheets.py` looks up review text by bare file name, which repeats across the corpus's polarity folders, so the annotation sheets showed positive-sentiment text. True labels were unaffected; the answer key was corrected (`results/annotation/answer_key_corrected.csv`) and the study is reported as positive-sentiment only. The script itself is not yet fixed.
+- Not built from the proposal: Trust Score, tri-class labels, DistilBERT/XGBoost ensemble, MinHash/LSH, LIME, counterfactuals, LLM hard negatives, interactive demo, 10M-row benchmark.
+- Text, behavior and network signals were never combined on one dataset. The scale-up uses synthetic replicas of YelpChi on a single machine.
