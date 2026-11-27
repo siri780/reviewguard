@@ -1,0 +1,11 @@
+M19 DistilBERT (distilbert-base-uncased) on the Ott corpus: max length 192, 3 epochs, batch 16, lr 5e-05, seed 42, duplicate-grouped five folds identical to M12g, no tuning
+
+fold 1: accuracy 0.8688  ROC-AUC 0.9489  F1 0.8750   TF-IDF LR: accuracy 0.8438 ROC-AUC 0.9152 F1 0.8512
+fold 2: accuracy 0.8844  ROC-AUC 0.9563  F1 0.8869   TF-IDF LR: accuracy 0.8719 ROC-AUC 0.9361 F1 0.8707
+fold 3: accuracy 0.9187  ROC-AUC 0.9705  F1 0.9212   TF-IDF LR: accuracy 0.8875 ROC-AUC 0.9566 F1 0.8868
+fold 4: accuracy 0.8969  ROC-AUC 0.9637  F1 0.8952   TF-IDF LR: accuracy 0.8688 ROC-AUC 0.9349 F1 0.8662
+fold 5: accuracy 0.9062  ROC-AUC 0.9694  F1 0.9074   TF-IDF LR: accuracy 0.8875 ROC-AUC 0.9416 F1 0.8861
+mean +/- sd DistilBERT: accuracy 0.8950 +/- 0.0193  ROC-AUC 0.9618 +/- 0.0091  F1 0.8971 +/- 0.0179
+mean +/- sd TF-IDF LR:  accuracy 0.8719 +/- 0.0179  ROC-AUC 0.9369 +/- 0.0149  F1 0.8722 +/- 0.0149
+ROC-AUC difference (DistilBERT - TF-IDF) per fold: +0.0337, +0.0202, +0.0139, +0.0288, +0.0278; mean +0.0249; DistilBERT higher in 5 of 5 folds
+Five folds and one seed: this does not establish that either model is better.

@@ -1,9 +1,9 @@
 PART A  LIME vs Kernel SHAP on the boosted model (60 random test reviews)
-Mean top-5 overlap per review: 2.28 / 5 (range 0-4)
-Mean Spearman rank correlation of |attribution| per review: 0.388
-Global top-5 by mean |SHAP|: ['deg_rur', 'f18', 'f5', 'f0', 'f1']
-Global top-5 by mean |LIME|: ['deg_rur', 'f5', 'f22', 'f20', 'f0']
-Global rank correlation (36 features): 0.860
+Mean top-5 overlap per review: 2.28 / 5 (range 1-4)
+Mean Spearman rank correlation of |attribution| per review: 0.322
+Global top-5 by mean |SHAP|: ['deg_rur', 'f18', 'f5', 'f1', 'f0']
+Global top-5 by mean |LIME|: ['deg_rur', 'f5', 'f22', 'f1', 'f0']
+Global rank correlation (36 features): 0.644
 deg_rur rank by mean |SHAP|: 1 of 36; by mean |LIME|: 1 of 36
 Attributions are for one boosted fit; LIME and Kernel SHAP are sampling-based approximations.
 
@@ -18,10 +18,10 @@ Share of flagged reviews whose current reviewer count is 0: 93.8%
 This is a model-sensitivity statement, not advice on how a reviewer could evade detection.
 
 PART C  Trust Score = 100 x (1 - calibrated probability of being filtered); test set 9,190 reviews
--- logistic regression: AUC 0.8511; Brier raw 0.0923 -> calibrated 0.0926; ECE raw 0.0062 -> calibrated 0.0096
-   filtered share by Trust decile (lowest trust first): 56.8%, 32.3%, 20.9%, 13.1%, 8.9%, 5.7%, 4.2%, 2.0%, 1.2%, 0.2%
-   lowest-trust decile holds 39.1% of all filtered reviews; base rate 14.53%
--- boosting: AUC 0.9607; Brier raw 0.0479 -> calibrated 0.0469; ECE raw 0.0256 -> calibrated 0.0093
-   filtered share by Trust decile (lowest trust first): 88.7%, 39.7%, 9.2%, 4.2%, 1.1%, 0.5%, 0.3%, 0.9%, 0.4%, 0.1%
-   lowest-trust decile holds 61.0% of all filtered reviews; base rate 14.53%
+-- logistic regression: AUC 0.8515; Brier raw 0.0922 -> calibrated 0.0927; ECE raw 0.0052 -> calibrated 0.0085
+   filtered share by Trust decile (lowest trust first): 58.3%, 31.4%, 19.5%, 13.7%, 9.6%, 6.3%, 2.7%, 2.4%, 1.2%, 0.1%
+   lowest-trust decile holds 40.1% of all filtered reviews; base rate 14.53%
+-- boosting: AUC 0.9592; Brier raw 0.0489 -> calibrated 0.0476; ECE raw 0.0240 -> calibrated 0.0082
+   filtered share by Trust decile (lowest trust first): 87.8%, 39.1%, 10.0%, 4.1%, 1.8%, 0.5%, 0.9%, 0.5%, 0.4%, 0.0%
+   lowest-trust decile holds 60.4% of all filtered reviews; base rate 14.53%
 Calibration is fit on 20% of the training rows. The Trust Score is a calibrated ranking of Yelp-filter risk; it is not validated against human judgment of trust.

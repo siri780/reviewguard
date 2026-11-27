@@ -1,0 +1,20 @@
+M18 MinHash LSH near-duplicate search (Ott corpus, word 3-gram shingles)
+
+Reviews: 1600; candidate pairs if compared exhaustively: 1,279,200
+MinHashLSH: 20 hash tables, seed 42, join threshold Jaccard similarity >= 0.5; pairs returned: 7
+Recall against exact Jaccard (all pairs):
+  similarity >= 0.9: exact pairs 4, found by LSH 4 (recall 1.000; expected for a pair exactly at 0.9: 1.000)
+  similarity >= 0.7: exact pairs 4, found by LSH 4 (recall 1.000; expected for a pair exactly at 0.7: 1.000)
+  similarity >= 0.5: exact pairs 7, found by LSH 7 (recall 1.000; expected for a pair exactly at 0.5: 1.000)
+Pairs returned by LSH have exact Jaccard >= 0.5 by construction, so precision at 0.5 is 1.0 (Spark returns the exact distance).
+Share of LSH pairs with the same label: 1.000; same fold: 1.000
+Reviews -> groups after linking LSH pairs (Jaccard >= 0.5): 1600 -> 1594
+M12 cosine rule (TF-IDF cosine >= 0.9): 4 pairs; also found by LSH: 4
+Most similar pairs (file names, Jaccard):
+  t_omni_10.txt | t_omni_13.txt | 1.000
+  t_affinia_14.txt | t_affinia_19.txt | 1.000
+  t_monaco_17.txt | t_monaco_20.txt | 1.000
+  t_omni_5.txt | t_omni_9.txt | 1.000
+  t_omni_5.txt | t_omni_7.txt | 0.676
+  t_omni_7.txt | t_omni_9.txt | 0.676
+  t_amalfi_1.txt | t_amalfi_14.txt | 0.604

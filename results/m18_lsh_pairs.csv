@@ -1,0 +1,8 @@
+a,b,jdist,sim,file_a,file_b
+621,624,0.0,1.0,t_omni_10.txt,t_omni_13.txt
+485,490,0.0,1.0,t_affinia_14.txt,t_affinia_19.txt
+448,452,0.0,1.0,t_monaco_17.txt,t_monaco_20.txt
+635,639,0.0,1.0,t_omni_5.txt,t_omni_9.txt
+635,637,0.3237410071942446,0.6762589928057554,t_omni_5.txt,t_omni_7.txt
+637,639,0.3237410071942446,0.6762589928057554,t_omni_7.txt,t_omni_9.txt
+740,745,0.3955223880597015,0.6044776119402985,t_amalfi_1.txt,t_amalfi_14.txt
