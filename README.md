@@ -6,7 +6,7 @@ Spark (MLlib + GraphFrames) study of whether reviewer-network features improve s
 
 - Repo: https://github.com/siri780/reviewguard (public)
 - Frozen version for grading: tag `final-v1`. Anything committed after this tag is not part of the submission.
-- Layout: `src/` scripts, `results/` recorded outputs, `docs/annotation_guideline.md`, `requirements.txt`, `README.md`.
+- Layout: `src/` scripts, `results/` recorded outputs, `docs/annotation_guideline.md`, `requirements.txt`, `ReviewGuard_Final_Report.pdf`, `README.md`.
 
 ## 2. Architecture and execution path
 
@@ -75,12 +75,12 @@ Status of each result: **Re-runnable** = script and output both in the repo. **R
 | B. Graph analysis | m3b, m4, m4b, m9, m10 | Sai Varshith Sabbella | Re-runnable |
 | C. Checks and explanation | m5, m6, m14 | Dhanyashri Marianna | Re-runnable |
 | D. Scale and systems | m7, m11, environment | Gaurang Acharekar | Re-runnable |
-| E. Text and human study | m12g, m13, annotation analysis | Vishnu Malladi | Annotation sheet builder has a known bug (below); results recorded |
+| E. Text and human study | m12g, m13, annotation analysis | Vishnu Malladi | Annotation results recorded (see known issue below); m13 fix not re-run |
 
 Claude (Anthropic) assisted with scaffolding, debugging, analysis review and report drafting; the team made the design decisions and is responsible for the results.
 
 ## Known issues and unfinished work
 
-- `m13_make_annotation_sheets.py` looks up review text by bare file name, which repeats across the corpus's polarity folders, so the annotation sheets showed positive-sentiment text. True labels were unaffected; the answer key was corrected (`results/annotation/answer_key_corrected.csv`) and the study is reported as positive-sentiment only. The script itself is not yet fixed.
+- The annotation sheets used in the study were built by an earlier version of `m13_make_annotation_sheets.py` that looked up review text by bare file name. Names repeat across the corpus's polarity folders, so every sheet row showed the positive-sentiment text. True labels were unaffected. The answer key was corrected (`results/annotation/answer_key_corrected.csv`) and the study is reported as positive-sentiment only. The script now looks up text by (polarity, file name); this fix has not been re-run, and re-running it would produce sheets that differ from the ones the annotators saw.
 - Not built from the proposal: Trust Score, tri-class labels, DistilBERT/XGBoost ensemble, MinHash/LSH, LIME, counterfactuals, LLM hard negatives, interactive demo, 10M-row benchmark.
 - Text, behavior and network signals were never combined on one dataset. The scale-up uses synthetic replicas of YelpChi on a single machine.
