@@ -1,24 +1,15 @@
 """
-ReviewGuard - M3b: deg_rur ablation (addresses review point #2)
+ReviewGuard - M3b: deg_rur ablation
 
-The earlier "deg_rur alone" diagnostic only showed that one feature is weak
-by itself - it does not show how much deg_rur contributes WITHIN the full
-model. This script runs the four comparisons needed to actually answer that:
+Five configurations on the same shared split:
+  (a) M1 (32 handcrafted features)
+  (b) M1 + deg_rur only (33 features)
+  (c) Full M3 (32 handcrafted + deg_rur + deg_rsr + deg_rtr + pagerank, 36 features)
+  (d) M3 minus deg_rur (35 features)
+  (e) deg_rur alone (1 feature; diagnostic only, not used to judge its role inside M3)
 
-  (a) M1 (32 handcrafted features)                     -> baseline
-  (b) M1 + deg_rur only (33 features)                   -> does this one
-      feature alone explain most of the M1->M3 jump?
-  (c) Full M3 (32 handcrafted + deg_rur + deg_rsr +
-      deg_rtr + pagerank, 36 features)                  -> everything
-  (d) M3 minus deg_rur (35 features: handcrafted +
-      deg_rsr + deg_rtr + pagerank)                      -> does removing
-      just deg_rur from the full model hurt much?
-  (e) deg_rur alone (1 feature)                         -> kept from the
-      earlier diagnostic for continuity, but NOT used on its own to draw
-      conclusions about its role inside M3.
-
-Run this AFTER m3_network_features.py (needs results/_m3_features.csv and
-results/_shared_split_row_ids.csv, both written by that script).
+Run from the repository root AFTER m3_network_features.py:  python src/m3b_ablation.py
+(needs results/_m3_features.csv and results/_shared_split_row_ids.csv)
 """
 import pandas as pd
 from pyspark.sql import SparkSession
@@ -56,15 +47,19 @@ with open("results/m3b_ablation_results.txt", "w") as fh:
         fh.write("\n" + common.format_results(name, metrics))
         fh.write("-" * 70 + "\n")
 
-    c_minus_d_auc = results["(c) Full M3 (36 features)"]["roc_auc"] - results["(d) M3 minus deg_rur (35 features)"]["roc_auc"]
-    c_minus_d_f1 = results["(c) Full M3 (36 features)"]["fraud_f1"] - results["(d) M3 minus deg_rur (35 features)"]["fraud_f1"]
-    a_minus_b_auc = results["(b) M1 + deg_rur only (33 features)"]["roc_auc"] - results["(a) M1 only (32 handcrafted)"]["roc_auc"]
+    a = results["(a) M1 only (32 handcrafted)"]
+    b = results["(b) M1 + deg_rur only (33 features)"]
+    c = results["(c) Full M3 (36 features)"]
+    d = results["(d) M3 minus deg_rur (35 features)"]
     fh.write(
-        f"\nDerived: removing deg_rur from full M3 changes ROC-AUC by {c_minus_d_auc:+.4f} "
-        f"and fraud F1 by {c_minus_d_f1:+.4f}.\n"
-        f"Derived: adding deg_rur alone to M1 changes ROC-AUC by {a_minus_b_auc:+.4f}.\n"
-        "These two numbers - not the standalone deg_rur diagnostic - are what should be "
-        "used to state deg_rur's actual contribution within the model.\n"
+        "\nDerived (change = after - before):\n"
+        f"Removing deg_rur from the full model lowers ROC-AUC from {c['roc_auc']:.4f} to {d['roc_auc']:.4f} "
+        f"({d['roc_auc'] - c['roc_auc']:+.4f}) and lowers fraud-class F1 from {c['fraud_f1']:.4f} to "
+        f"{d['fraud_f1']:.4f} ({d['fraud_f1'] - c['fraud_f1']:+.4f}).\n"
+        f"Adding deg_rur alone to M1 raises ROC-AUC from {a['roc_auc']:.4f} to {b['roc_auc']:.4f} "
+        f"({b['roc_auc'] - a['roc_auc']:+.4f}).\n"
+        "These two comparisons, not the standalone deg_rur diagnostic (e), state deg_rur's "
+        "contribution within the model.\n"
     )
 
 print("\nWrote results/m3b_ablation_results.txt")
