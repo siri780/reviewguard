@@ -1,3 +1,5 @@
+Provenance: generated with graph features recomputed outside Spark (scipy copy of M3; reproduces the logistic-regression test AUCs to within 0.0002). Re-running src/m15_boosted_disjoint_ci.py on the Spark-produced results/_m3_features.csv overwrites this file.
+
 M15 Boosting and logistic regression on both splits, with reviewer-cluster bootstrap 95% intervals
 Bootstrap: 1000 replicates over whole R-U-R clusters of the test set, seed 0. Single model fit per cell.
 
