@@ -1,15 +1,15 @@
-"""M14 - Does the network gain survive a non-linear model? HistGradientBoosting on the same split."""
-import glob, pandas as pd
+"""M14 - Does the network gain survive a non-linear model? HistGradientBoosting on the same split.
+Run from the repository root:  python src/m14_gbt_check.py   (needs results/_m3_features.csv from m3
+and results/_shared_split_row_ids.csv from m1)."""
+import pandas as pd
 from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.metrics import roc_auc_score, average_precision_score, f1_score, precision_score, recall_score
 
-df = pd.read_csv("results/_m3_features.csv")
-split = None
-for p in glob.glob("results/*.csv") + glob.glob("data/*.csv"):
-    h = pd.read_csv(p, nrows=2)
-    if {"row_id", "split"} <= set(h.columns):
-        split = pd.read_csv(p)[["row_id", "split"]]; print("split file:", p); break
-assert split is not None, "no split file found"
+import common
+
+df = pd.read_csv(common.M3_FEATURES_PATH)
+split = pd.read_csv(common.SPLIT_PATH)[["row_id", "split"]]
+print("split file:", common.SPLIT_PATH)
 df = df.merge(split, on="row_id")
 base = [c for c in df.columns if c.startswith("f") and c[1:].isdigit()]
 configs = {"M1 (32 handcrafted)": base,
