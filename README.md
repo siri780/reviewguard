@@ -5,8 +5,8 @@ Spark (MLlib + GraphFrames) study of whether reviewer-network features improve s
 ## 1. Repository and frozen version
 
 - Repo: https://github.com/siri780/reviewguard (public)
-- Frozen version for grading: tag `final-v1` (commit `<COMMIT-HASH>`). Anything committed after this tag is not part of the submission.
-- Layout: `src/` scripts, `results/` recorded outputs, `docs/annotation_guideline.md`, `README.md`.
+- Frozen version for grading: tag `final-v1`. Anything committed after this tag is not part of the submission.
+- Layout: `src/` scripts, `results/` recorded outputs, `docs/annotation_guideline.md`, `requirements.txt`, `README.md`.
 
 ## 2. Architecture and execution path
 
@@ -26,7 +26,7 @@ Every script reads `results/_shared_split_row_ids.csv` (stratified 80/20, seed 4
 - Hardware used: GitHub Codespaces, 2 cores (main runs), 4 cores / 16 GB (scale-up)
 
 ```bash
-pip install --break-system-packages pyspark==3.5.3 graphframes scikit-learn pandas numpy scipy shap dgl
+pip install --break-system-packages -r requirements.txt
 ```
 
 Data: YelpChi is downloaded through DGL `FraudYelpDataset` (see `src/common.py`). The Ott et al. corpus (op_spam_v1.4) must be downloaded separately into `data/optspam/` and is not stored in the repo.
@@ -57,11 +57,11 @@ python m13_make_annotation_sheets.py   # see known issue below
 
 | Report item | Script | Output file |
 |---|---|---|
-| Table 2, Figure 2 (ablation) | m1, m3, m3b | results/m1_*, m3_*, m3b_ablation_results.txt |
-| Table 3 (robustness) | m9, m10, m14 | results/m9_*, m10_*, m14_gbt_results.txt |
-| Section 8.2 (campaigns, SHAP, leakage) | m4, m4b, m5, m6 | results/m4*, m5*, m6* |
-| Table 4, Figure 3 (scale-up) | m11 | results/m11_scale_cores*.csv |
-| Table 5 (text, annotation) | m12g, m13 | results/m12g_*, results/annotation/ |
+| Table 2, Figure 2 (ablation) | m1, m3, m3b | `results/m1_*`, `results/m3_*`, `results/m3b_ablation_results.txt` |
+| Table 3 (robustness) | m9, m10, m14 | `results/m9_*`, `results/m10_*`, `results/m14_gbt_results.txt` |
+| Section 8.2 (campaigns, SHAP, leakage) | m4, m4b, m5, m6 | `results/m4*`, `results/m5*`, `results/m6*` |
+| Table 4, Figure 3 (scale-up) | m11 | `results/m11_scale_cores*.csv` |
+| Table 5 (text, annotation) | m12g, m13 | `results/m12g_*`, `results/annotation/` |
 
 Timings and AUC values can differ slightly across machines and Spark runs.
 
@@ -77,7 +77,7 @@ Status of each result: **Re-runnable** = script and output both in the repo. **R
 | D. Scale and systems | m7, m11, environment | Gaurang Acharekar | Re-runnable |
 | E. Text and human study | m12g, m13, annotation analysis | Vishnu Malladi | Annotation sheet builder has a known bug (below); results recorded |
 
-Each owner re-ran their scripts and compared against `results/` before the tag. Claude (Anthropic) assisted with scaffolding, debugging, analysis review and report drafting; the team made the design decisions and is responsible for the results.
+Claude (Anthropic) assisted with scaffolding, debugging, analysis review and report drafting; the team made the design decisions and is responsible for the results.
 
 ## Known issues and unfinished work
 
