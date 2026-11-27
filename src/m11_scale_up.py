@@ -1,7 +1,9 @@
 """M11 - Synthetic scale-up. The YelpChi graph (features, R-U-R edges, labels) is replicated
 k times as disjoint copies so row counts reach ~1M. Measures, per size: R-U-R degree,
 connected components (GraphFrames), and logistic-regression training. SYNTHETIC workload:
-it tests pipeline scaling, not detection quality. Cores via env var CORES (default: all)."""
+it tests pipeline scaling, not detection quality. Cores via env var CORES (default: all).
+Optional env vars: KS (copies, default 1,2,5,11,22), TRIALS (default 2), DRIVER_MEM (default 5g), SUFFIX (appended to the
+output file name so a new run does not overwrite an earlier one; default empty). K=218 gives about 10.0 million rows."""
 import os, time, json
 import numpy as np
 import pandas as pd
@@ -13,9 +15,11 @@ import common
 CORES = os.environ.get("CORES", "*")
 KS = [int(x) for x in os.environ.get("KS", "1,2,5,11,22").split(",")]
 TRIALS = int(os.environ.get("TRIALS", "2"))
+DRIVER_MEM = os.environ.get("DRIVER_MEM", "5g")
+SUFFIX = os.environ.get("SUFFIX", "")
 spark = SparkSession.builder.appName("ReviewGuard-M11").master(f"local[{CORES}]") \
     .config("spark.jars.packages", "io.graphframes:graphframes-spark3_2.12:0.12.3") \
-    .config("spark.driver.memory", "5g").config("spark.sql.shuffle.partitions", "16").getOrCreate()
+    .config("spark.driver.memory", DRIVER_MEM).config("spark.sql.shuffle.partitions", "16").getOrCreate()
 spark.sparkContext.setCheckpointDir("/tmp/gf_checkpoints")
 from graphframes import GraphFrame
 
@@ -59,6 +63,6 @@ for k in KS:
         rec = dict(k=k, rows=rows, trial=trial, deg_s=round(d, 2), cc_s=round(c, 2), lr_s=round(l, 2))
         print(rec, flush=True); res.append(rec)
 tag = CORES.replace("*", "all")
-pd.DataFrame(res).to_csv(f"results/m11_scale_cores{tag}.csv", index=False)
-print("saved results/m11_scale_cores%s.csv" % tag)
+pd.DataFrame(res).to_csv(f"results/m11_scale_cores{tag}{SUFFIX}.csv", index=False)
+print(f"saved results/m11_scale_cores{tag}{SUFFIX}.csv")
 spark.stop()
