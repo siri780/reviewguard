@@ -92,6 +92,8 @@ python src/m6_shap_explainability.py
 | Reviewer means | M10; results/m10_reviewer_aggregates_results.txt |
 | Campaign, audit and explanation | M4, M4b, M5, M6; results/m4*, results/m5*, results/m6_shap_results.txt |
 | Table 6, timing | M11; results/m11_scale_cores4.csv; group trials by row count and average each stage before summing |
+| Section 8, intervals and seed check | M15; results/m15_boosted_disjoint_ci_results.txt |
+| Section 8, demo | M16; demo/index.html |
 | Text and annotation | M12g; results/m12g_text_baseline_results.txt; historical annotation records in results/annotation/ |
 
 ```bash
@@ -100,7 +102,20 @@ grep -A6 'Derived' results/m3b_ablation_results.txt
 cat results/m14_gbt_results.txt
 ```
 
-Expected ablation ROC-AUCs in order: 0.7689, 0.8515, 0.8514, 0.7844, 0.7218. Removing reviewer degree lowers AUC by 0.0670 and fraud F1 by 0.1297. The recorded file at an earlier commit may retain the old sign wording; freshly generated output from the corrected script uses after minus before. Boosted AUCs: 0.9445, 0.9602, 0.9636.
+Expected ablation ROC-AUCs in order: 0.7689, 0.8515, 0.8514, 0.7844, 0.7218. Removing reviewer degree lowers AUC by 0.0670 and fraud F1 by 0.1297. Freshly generated output from the corrected script uses after minus before. Boosted AUCs: 0.9445, 0.9602, 0.9636.
+
+### Follow-up checks and demo (M15, M16)
+
+These two scripts need only `results/_m3_features.csv` (from M3), `results/_shared_split_row_ids.csv` (from M1) and `data/YelpChi.mat`; they do not start Spark. Run from the repository root:
+
+```bash
+python src/m15_boosted_disjoint_ci.py
+python src/m16_build_demo.py
+```
+
+M15 repeats the feature comparison with boosting and logistic regression on both splits, with 1,000-replicate bootstrap intervals that resample whole reviewer clusters of the test set, plus a ten-seed check of boosting. It takes about two minutes. M16 writes `demo/index.html`, a self-contained page that lets a reader pick any of 400 sampled test reviews and see its score with and without network features and the largest feature contributions. Open the file in a browser. It is an explorer of saved model outputs, not a live scoring service, and the sample is not representative of the real class proportions.
+
+The committed `results/m15_boosted_disjoint_ci_results.txt` was generated with graph features recomputed outside Spark (a scipy copy of M3 that reproduces the logistic-regression test AUCs to within 0.0002). Boosting results also vary slightly across environments because early stopping uses a random validation split. Rerunning M15 on the Spark-produced feature table overwrites the file; expect the same conclusions with differences of a few thousandths. The M15 and M16 scripts are the only ones not covered by the ten-script verification.
 
 ### Additional original experiments
 
